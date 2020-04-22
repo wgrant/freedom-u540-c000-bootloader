@@ -10,9 +10,9 @@ OBJCOPY=${CROSSCOMPILE}objcopy
 OBJDUMP=${CROSSCOMPILE}objdump
 WARNINGS=-Wall -Wextra -Wshadow -Wformat=2 -Wformat-truncation=2 -Wundef -Wno-unused-parameter
 CPPFLAGS=-I. -Ilib/include
-CFLAGS=-O2 -ggdb -march=rv64imafdc -mabi=lp64d -mcmodel=medany -mexplicit-relocs $(WARNINGS) $(CPPFLAGS) -ffreestanding
+CFLAGS=-O2 -ggdb -march=rv64imafdc -mabi=lp64d -mcmodel=medany -mexplicit-relocs $(WARNINGS) $(CPPFLAGS) -ffreestanding -fno-pic
 CCASFLAGS=-I. -mcmodel=medany -mexplicit-relocs
-LDFLAGS=-nostdlib -nostartfiles
+LDFLAGS=-nostdlib -nostartfiles -static
 
 # This is broken up to match the order in the original zsbl
 # clkutils.o is there to match original zsbl, may not be needed
