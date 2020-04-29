@@ -45,7 +45,10 @@ int main()
       peripheral_input_khz = (CORE_CLK_KHZ / 2);
     }
     init_uart(peripheral_input_khz);
-    ux00boot_load_gpt_partition((void*) CCACHE_SIDEBAND_ADDR, &gpt_guid_sifive_fsbl, peripheral_input_khz);
+    int error = ux00boot_load_gpt_partition((void*) CCACHE_SIDEBAND_ADDR, &gpt_guid_sifive_fsbl, peripheral_input_khz);
+    if (error) {
+      ux00boot_fail(error, 0);
+    }
   }
 
   Barrier_Wait(&barrier, NUM_CORES);

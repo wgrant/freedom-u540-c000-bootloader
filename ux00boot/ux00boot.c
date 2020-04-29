@@ -49,19 +49,6 @@
 #define ERROR_CODE_ERRORCODE_MCAUSE_INT (0x1UL << 55)
 #define ERROR_CODE_ERRORCODE_MCAUSE_CAUSE ((0x1UL << 55) - 1)
 
-#define ERROR_CODE_UNHANDLED_SPI_DEVICE 0x1
-#define ERROR_CODE_UNHANDLED_BOOT_ROUTINE 0x2
-#define ERROR_CODE_GPT_PARTITION_NOT_FOUND 0x3
-#define ERROR_CODE_SPI_COPY_FAILED 0x4
-#define ERROR_CODE_SD_CARD_CMD0 0x5
-#define ERROR_CODE_SD_CARD_CMD8 0x6
-#define ERROR_CODE_SD_CARD_ACMD41 0x7
-#define ERROR_CODE_SD_CARD_CMD58 0x8
-#define ERROR_CODE_SD_CARD_CMD16 0x9
-#define ERROR_CODE_SD_CARD_CMD18 0xa
-#define ERROR_CODE_SD_CARD_CMD18_CRC 0xb
-#define ERROR_CODE_SD_CARD_UNEXPECTED_ERROR 0xc
-
 // We are assuming that an error LED is connected to the GPIO pin
 #define UX00BOOT_ERROR_LED_GPIO_PIN 15
 #define UX00BOOT_ERROR_LED_GPIO_MASK (1 << 15)
@@ -520,7 +507,7 @@ void ux00boot_fail(long code, int trap)
  * Read from mode select device to determine which bulk storage medium to read
  * GPT image from, and properly initialize the bulk storage based on type.
  */
-void ux00boot_load_gpt_partition(void* dst, const gpt_guid* partition_type_guid, unsigned int peripheral_input_khz)
+int ux00boot_load_gpt_partition(void* dst, const gpt_guid* partition_type_guid, unsigned int peripheral_input_khz)
 {
   uint32_t mode_select = *((volatile uint32_t*) MODESELECT_MEM_ADDR);
 
@@ -588,7 +575,5 @@ void ux00boot_load_gpt_partition(void* dst, const gpt_guid* partition_type_guid,
       break;
   }
 
-  if (error) {
-    ux00boot_fail(error, 0);
-  }
+  return error;
 }

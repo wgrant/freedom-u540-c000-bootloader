@@ -39,6 +39,11 @@
   #define PAYLOAD_DEST MEMORY_MEM_ADDR
 #endif
 
+// OpenSBI FW_JUMP_ADDR
+#ifndef PAYLOAD2_DEST
+  #define PAYLOAD2_DEST (MEMORY_MEM_ADDR + 0x200000)
+#endif
+
 #ifndef SPI_MEM_ADDR
   #ifndef SPI_NUM
     #define SPI_NUM 0
@@ -52,6 +57,7 @@
 Barrier barrier = { {0, 0}, {0, 0}, 0}; // bss initialization is done by main core while others do wfi
 
 extern const gpt_guid gpt_guid_sifive_bare_metal;
+extern const gpt_guid gpt_guid_opensbi_payload;
 volatile uint64_t dtb_target;
 unsigned int serial_to_burn = ~0U;
 
@@ -386,8 +392,22 @@ int main(int id, unsigned long dtb)
   uart_puts(uart, "\r\n");
 #endif
 
+  int error;
+
   puts("Loading boot payload");
-  ux00boot_load_gpt_partition((void*) PAYLOAD_DEST, &gpt_guid_sifive_bare_metal, peripheral_input_khz);
+  error = ux00boot_load_gpt_partition((void*) PAYLOAD_DEST, &gpt_guid_sifive_bare_metal, peripheral_input_khz);
+  if (error) {
+    ux00boot_fail(error, 0);
+  }
+
+  // Load a secondary payload, if present, to the OpenSBI FW_JUMP_ADDR (usually
+  // 0x80200000). If there's no secondary payload partition, assume the first
+  // payload was all that was neeeded and continue.
+  error = ux00boot_load_gpt_partition((void*) PAYLOAD2_DEST, &gpt_guid_opensbi_payload, peripheral_input_khz);
+  if (error && error != ERROR_CODE_GPT_PARTITION_NOT_FOUND) {
+    puts("\r\nFailed to load secondary boot payload");
+    ux00boot_fail(error, 0);
+  }
 
   puts("\r\n\n");
   slave_main(0, dtb);
